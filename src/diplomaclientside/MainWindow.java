@@ -5,17 +5,50 @@
  */
 package diplomaclientside;
 
+import java.awt.Component;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JDialog;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+
 /**
  *
  * @author Attila
  */
 public class MainWindow extends javax.swing.JFrame {
-
+    
+    private ArrayList<String> algorithms;
+    private ArrayList<String> datas;
+    private DatabaseConnection dc;
+    
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
         initComponents();
+        algorithms = new ArrayList<>(Arrays.asList("ctree", "gbm", "naiveBayes", "randomForest", "rpart", "svm"));
+        datas = new ArrayList<>(Arrays.asList("all", "avg", "odds", "prev", "10bet", "32red", "bet365", "betfred", "betrally", "betvictor", "boylesports", "comeon", "coral", "ladbrokes", "marathonbet", "skybet", "smartlive", "sportingbet", "spreadex", "stanjames", "titanbet", "unibet", "williamhill", "youbet", "betdaq", "betfair"));
+        
+        cmb_Algorithm.setModel(new DefaultComboBoxModel(algorithms.toArray()));
+        cmb_Dataset.setModel(new DefaultComboBoxModel(datas.toArray()));
+        
+        lbl_Algorithm.setText(cmb_Algorithm.getItemAt(cmb_Algorithm.getSelectedIndex()));
+        lbl_Dataset.setText(cmb_Dataset.getItemAt(cmb_Dataset.getSelectedIndex()));
+        
+        dc = new DatabaseConnection();
     }
 
     /**
@@ -27,49 +60,36 @@ public class MainWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
-        btn_Refresh = new javax.swing.JButton();
         btn_Exit = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         lbl_Algorithm = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         lbl_Dataset = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        lbl_Next = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        cmb_Algorithm = new javax.swing.JComboBox<>();
+        cmb_Dataset = new javax.swing.JComboBox<>();
+        btn_Refresh = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        table_Prev = new javax.swing.JTable();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table_Next = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         menu_File = new javax.swing.JMenu();
         mitem_Exit = new javax.swing.JMenuItem();
         menu_Tools = new javax.swing.JMenu();
         mitem_Options = new javax.swing.JMenuItem();
         menu_Help = new javax.swing.JMenu();
+        mitem_Data = new javax.swing.JMenuItem();
+        mitem_Algorithm = new javax.swing.JMenuItem();
         mitem_About = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Outcome predictor");
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null}
-            },
-            new String [] {
-                "Date", "Match", "Predicted outcome"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.String.class, java.lang.Integer.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(jTable1);
-
-        getContentPane().add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
-        btn_Refresh.setText("Refresh");
+        setResizable(false);
 
         btn_Exit.setText("Exit");
         btn_Exit.addActionListener(new java.awt.event.ActionListener() {
@@ -83,9 +103,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btn_Refresh)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 525, Short.MAX_VALUE)
+                .addContainerGap(1144, Short.MAX_VALUE)
                 .addComponent(btn_Exit, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -93,9 +111,7 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btn_Refresh)
-                    .addComponent(btn_Exit))
+                .addComponent(btn_Exit)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -109,7 +125,25 @@ public class MainWindow extends javax.swing.JFrame {
 
         jLabel2.setText("Algorithm:");
 
-        jLabel1.setText("Matches in one week");
+        lbl_Next.setText("Matches in next 7 days");
+
+        jLabel4.setText("Last 10 matches");
+
+        cmb_Algorithm.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2" }));
+
+        cmb_Dataset.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2" }));
+        cmb_Dataset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmb_DatasetActionPerformed(evt);
+            }
+        });
+
+        btn_Refresh.setText("Refresh");
+        btn_Refresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_RefreshActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -117,7 +151,7 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -125,9 +159,20 @@ public class MainWindow extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lbl_Algorithm)
-                            .addComponent(lbl_Dataset)))
-                    .addComponent(jLabel1))
-                .addContainerGap(519, Short.MAX_VALUE))
+                            .addComponent(lbl_Dataset))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btn_Refresh)))
+                        .addContainerGap(801, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lbl_Next)
+                        .addGap(275, 275, 275))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -135,17 +180,75 @@ public class MainWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(lbl_Algorithm))
+                    .addComponent(lbl_Algorithm)
+                    .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_Refresh))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(lbl_Dataset))
+                    .addComponent(lbl_Dataset)
+                    .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jLabel1)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbl_Next)
+                    .addComponent(jLabel4))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.NORTH);
+
+        jPanel1.setLayout(new java.awt.GridLayout(1, 0));
+
+        table_Prev.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null}
+            },
+            new String [] {
+                "Date", "Match", "Predicted outcome", "Outcome"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        table_Prev.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table_Prev.setEnabled(false);
+        jScrollPane2.setViewportView(table_Prev);
+
+        jPanel1.add(jScrollPane2);
+
+        table_Next.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null}
+            },
+            new String [] {
+                "Date", "Match", "Predicted outcome"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.String.class, java.lang.Integer.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(table_Next);
+
+        jPanel1.add(jScrollPane1);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         menu_File.setText("File");
 
@@ -168,6 +271,22 @@ public class MainWindow extends javax.swing.JFrame {
 
         menu_Help.setText("Help");
 
+        mitem_Data.setText("Datasets");
+        mitem_Data.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mitem_DataActionPerformed(evt);
+            }
+        });
+        menu_Help.add(mitem_Data);
+
+        mitem_Algorithm.setText("Algorithms");
+        mitem_Algorithm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mitem_AlgorithmActionPerformed(evt);
+            }
+        });
+        menu_Help.add(mitem_Algorithm);
+
         mitem_About.setText("About");
         menu_Help.add(mitem_About);
 
@@ -186,6 +305,169 @@ public class MainWindow extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_btn_ExitActionPerformed
 
+    private void cmb_DatasetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmb_DatasetActionPerformed
+        if (cmb_Dataset.getSelectedItem() != "all") {
+            if (!algorithms.contains("knn")) {
+                algorithms.add("knn");
+                cmb_Algorithm.setModel(new DefaultComboBoxModel(algorithms.toArray()));
+            }
+        }
+        else {
+            if (algorithms.contains("knn")) {
+                algorithms.remove("knn");
+                cmb_Algorithm.setModel(new DefaultComboBoxModel(algorithms.toArray()));
+            }
+        }
+    }//GEN-LAST:event_cmb_DatasetActionPerformed
+
+    private void btn_RefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_RefreshActionPerformed
+        try {     
+            dc.openConnection();
+            String data = cmb_Dataset.getSelectedItem().toString();
+            String algorithm = cmb_Algorithm.getSelectedItem().toString();
+            System.out.println(data);
+            System.out.println(algorithm);
+            String prevCommand = "SELECT MATCHES.MATCH_DATE as \"Date\","
+                    + " HOME_TEAMS.\"NAME\" || ' - ' || AWAY_TEAMS.\"NAME\" as \"Match\","
+                    + " PRED.PRED_RESULT as \"Predicted outcome\", MATCHES.\"RESULT\" as \"Outcome\""
+                    + " FROM KISKACSA08.PREDICTIONS as PRED, KISKACSA08.MATCHES as MATCHES,"
+                    + " KISKACSA08.TEAMS as HOME_TEAMS, KISKACSA08.TEAMS as AWAY_TEAMS"
+                    + " WHERE PRED.\"DATA\" = '" + data + "' AND PRED.ALGORITHM = '" + algorithm
+                    + "' AND MATCHES.MATCH_DATE < {fn TIMESTAMPADD(SQL_TSI_HOUR, -2, CURRENT_TIMESTAMP)} AND PRED.MATCH_ID = MATCHES.ID"
+                    + " AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID";
+            String nextCommand = "SELECT MATCHES.MATCH_DATE as \"Date\","
+                    + " HOME_TEAMS.\"NAME\" || ' - ' || AWAY_TEAMS.\"NAME\" as \"Match\","
+                    + " PRED.PRED_RESULT as \"Predicted outcome\" FROM KISKACSA08.PREDICTIONS as PRED,"
+                    + " KISKACSA08.MATCHES as MATCHES, KISKACSA08.TEAMS as HOME_TEAMS,"
+                    + " KISKACSA08.TEAMS as AWAY_TEAMS WHERE PRED.\"DATA\" = '" + data + "'"
+                    + " AND PRED.ALGORITHM = '" + algorithm + "' AND MATCHES.MATCH_DATE > {fn TIMESTAMPADD(SQL_TSI_HOUR, -2, CURRENT_TIMESTAMP)}"
+                    + " AND PRED.MATCH_ID = MATCHES.ID AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID"
+                    + " AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID";
+            
+            System.out.println(nextCommand);
+            
+            table_Prev.setModel(buildTableModel(prevCommand));
+            resizeColumnWidth(table_Prev);
+            
+            DefaultTableModel nextModel = buildTableModel(nextCommand);
+            if (nextModel.getRowCount() == 0) {
+                lbl_Next.setText("Matches in next 7 days (there are no matches)");
+            }
+            else {
+                lbl_Next.setText("Matches in next 7 days");
+            }
+            table_Next.setModel(buildTableModel(nextCommand));
+            resizeColumnWidth(table_Next);
+            
+            lbl_Algorithm.setText(cmb_Algorithm.getSelectedItem().toString());
+            lbl_Dataset.setText(cmb_Dataset.getSelectedItem().toString());
+        } catch (SQLException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                dc.closeConnection();
+            } catch (SQLException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+    }//GEN-LAST:event_btn_RefreshActionPerformed
+
+    private void mitem_DataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mitem_DataActionPerformed
+        HelpWindow help = new HelpWindow(this, true, 0);
+        help.setVisible(true);
+    }//GEN-LAST:event_mitem_DataActionPerformed
+
+    private void mitem_AlgorithmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mitem_AlgorithmActionPerformed
+        HelpWindow help = new HelpWindow(this, true, 1);
+        help.setVisible(true);
+    }//GEN-LAST:event_mitem_AlgorithmActionPerformed
+
+    private DefaultTableModel buildTableModel(String sql) throws SQLException{
+        ResultSet rs = dc.executeCommand(sql);
+        
+        ResultSetMetaData meta = rs.getMetaData();
+        
+        Vector<String> columnNames = new Vector<>();
+        int columnCount = meta.getColumnCount();
+        for (int i = 1; i <= columnCount; i++) {
+            columnNames.add(meta.getColumnName(i));
+        }
+        
+        Vector<Vector<Object>> data = new Vector<>();
+        while (rs.next()) {            
+            Vector<Object> vector = new Vector<>();
+            if (columnNames.contains("Outcome")) {
+                int predictedOutcome = rs.getInt("Predicted outcome");
+                String predictedOut;
+                switch (predictedOutcome) {
+                    case 1:
+                        predictedOut = "H";
+                        break;
+                    case -1:
+                        predictedOut = "A";
+                        break;
+                    default:
+                        predictedOut = "D";
+                        break;
+                }
+                String outcome = rs.getString("Outcome");
+                String out;
+                int homeGoals = outcome.charAt(0);
+                int awayGoals = outcome.charAt(2);
+                if (homeGoals > awayGoals) {
+                    out = "H";
+                }
+                else if (awayGoals > homeGoals) {
+                    out = "A";
+                }
+                else {
+                    out = "D";
+                }
+                for (int i = 1; i < columnCount-1; i++) {
+                    vector.add(rs.getObject(i));
+                }
+                vector.add(predictedOut);
+                vector.add(out);
+            }
+            else {
+                int predictedOutcome = rs.getInt("Predicted outcome");
+                String predictedOut;
+                switch (predictedOutcome) {
+                    case 1:
+                        predictedOut = "H";
+                        break;
+                    case -1:
+                        predictedOut = "A";
+                        break;
+                    default:
+                        predictedOut = "D";
+                        break;
+                }
+                for (int i = 1; i < columnCount; i++) {
+                    vector.add(rs.getObject(i));
+                }
+                vector.add(predictedOut);
+            }
+            data.add(vector);
+        }
+        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        return model;
+    }
+    
+    private void resizeColumnWidth(JTable table) {
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 50; // Min width
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width +1 , width);
+            }
+            columnModel.getColumn(column).setPreferredWidth(width);
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -224,21 +506,29 @@ public class MainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_Exit;
     private javax.swing.JButton btn_Refresh;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JComboBox<String> cmb_Algorithm;
+    private javax.swing.JComboBox<String> cmb_Dataset;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lbl_Algorithm;
     private javax.swing.JLabel lbl_Dataset;
+    private javax.swing.JLabel lbl_Next;
     private javax.swing.JMenu menu_File;
     private javax.swing.JMenu menu_Help;
     private javax.swing.JMenu menu_Tools;
     private javax.swing.JMenuItem mitem_About;
+    private javax.swing.JMenuItem mitem_Algorithm;
+    private javax.swing.JMenuItem mitem_Data;
     private javax.swing.JMenuItem mitem_Exit;
     private javax.swing.JMenuItem mitem_Options;
+    private javax.swing.JTable table_Next;
+    private javax.swing.JTable table_Prev;
     // End of variables declaration//GEN-END:variables
 }

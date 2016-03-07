@@ -1,3 +1,10 @@
 /build/
 /dist/
 /build.xml
+/nbproject/private/
+/*.txt
+/*.csv
+/*.grab
+/Rubbish
+/.debris
+/*.log

@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 //konstruktorban adatbázis kapcsolódáshoz szükséges adatok beállítása
 public class DatabaseConnection {
-    private final String host = "jdbc:derby://localhost:1527/DiplomaOddsDatabase";
+    private final String host = "jdbc:derby://109.110.143.103/DiplomaOddsDatabase";
     private final String user = "diploma";
     private final String pass = "diploma";
     private Connection con;

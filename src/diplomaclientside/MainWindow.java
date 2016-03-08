@@ -330,16 +330,16 @@ public class MainWindow extends javax.swing.JFrame {
             String prevCommand = "SELECT MATCHES.MATCH_DATE as \"Date\","
                     + " HOME_TEAMS.\"NAME\" || ' - ' || AWAY_TEAMS.\"NAME\" as \"Match\","
                     + " PRED.PRED_RESULT as \"Predicted outcome\", MATCHES.\"RESULT\" as \"Outcome\""
-                    + " FROM KISKACSA08.PREDICTIONS as PRED, KISKACSA08.MATCHES as MATCHES,"
-                    + " KISKACSA08.TEAMS as HOME_TEAMS, KISKACSA08.TEAMS as AWAY_TEAMS"
+                    + " FROM DIPLOMA.PREDICTIONS as PRED, DIPLOMA.MATCHES as MATCHES,"
+                    + " DIPLOMA.TEAMS as HOME_TEAMS, DIPLOMA.TEAMS as AWAY_TEAMS"
                     + " WHERE PRED.\"DATA\" = '" + data + "' AND PRED.ALGORITHM = '" + algorithm
                     + "' AND MATCHES.MATCH_DATE < {fn TIMESTAMPADD(SQL_TSI_HOUR, -2, CURRENT_TIMESTAMP)} AND PRED.MATCH_ID = MATCHES.ID"
                     + " AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID";
             String nextCommand = "SELECT MATCHES.MATCH_DATE as \"Date\","
                     + " HOME_TEAMS.\"NAME\" || ' - ' || AWAY_TEAMS.\"NAME\" as \"Match\","
-                    + " PRED.PRED_RESULT as \"Predicted outcome\" FROM KISKACSA08.PREDICTIONS as PRED,"
-                    + " KISKACSA08.MATCHES as MATCHES, KISKACSA08.TEAMS as HOME_TEAMS,"
-                    + " KISKACSA08.TEAMS as AWAY_TEAMS WHERE PRED.\"DATA\" = '" + data + "'"
+                    + " PRED.PRED_RESULT as \"Predicted outcome\" FROM DIPLOMA.PREDICTIONS as PRED,"
+                    + " DIPLOMA.MATCHES as MATCHES, DIPLOMA.TEAMS as HOME_TEAMS,"
+                    + " DIPLOMA.TEAMS as AWAY_TEAMS WHERE PRED.\"DATA\" = '" + data + "'"
                     + " AND PRED.ALGORITHM = '" + algorithm + "' AND MATCHES.MATCH_DATE > {fn TIMESTAMPADD(SQL_TSI_HOUR, -2, CURRENT_TIMESTAMP)}"
                     + " AND PRED.MATCH_ID = MATCHES.ID AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID"
                     + " AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID";

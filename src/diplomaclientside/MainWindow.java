@@ -5,24 +5,26 @@
  */
 package diplomaclientside;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.print.DocFlavor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JDialog;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 
 /**
  *
@@ -33,6 +35,11 @@ public class MainWindow extends javax.swing.JFrame {
     private ArrayList<String> algorithms;
     private ArrayList<String> datas;
     private DatabaseConnection dc;
+    private int matchNumber;
+    private String host;
+    private int port;
+    private String user;
+    private String password;
     
     /**
      * Creates new form MainWindow
@@ -48,7 +55,33 @@ public class MainWindow extends javax.swing.JFrame {
         lbl_Algorithm.setText(cmb_Algorithm.getItemAt(cmb_Algorithm.getSelectedIndex()));
         lbl_Dataset.setText(cmb_Dataset.getItemAt(cmb_Dataset.getSelectedIndex()));
         
-        dc = new DatabaseConnection();
+        matchNumber = Integer.parseInt(cmb_MatchNumber.getSelectedItem().toString());
+        host = "109.110.143.103";
+        port = 1527;
+        user = "diploma";
+        password = "diploma";
+        dc = new DatabaseConnection(host, port, user, password);
+        
+        fillTables();
+        try {
+            int best = 0;
+            String bestAlgorithm = "";
+            String bestData = "";
+            for (String algorithm : algorithms) {
+                for (String data : datas) {
+                    int act = calcAccuracy(algorithm, data);
+                    if (act > best) {
+                        best = act;
+                        bestAlgorithm = algorithm;
+                        bestData = data;
+                    }
+                }
+            }
+            String labelString = bestAlgorithm + ", " + bestData + " with " + best + "% accuracy";
+            lbl_Best.setText(labelString);
+        } catch (SQLException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -72,6 +105,12 @@ public class MainWindow extends javax.swing.JFrame {
         cmb_Algorithm = new javax.swing.JComboBox<>();
         cmb_Dataset = new javax.swing.JComboBox<>();
         btn_Refresh = new javax.swing.JButton();
+        cmb_MatchNumber = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        bar_Accuracy = new javax.swing.JProgressBar();
+        jLabel6 = new javax.swing.JLabel();
+        lbl_Best = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         table_Prev = new javax.swing.JTable();
@@ -127,7 +166,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         lbl_Next.setText("Matches in next 7 days");
 
-        jLabel4.setText("Last 10 matches");
+        jLabel4.setText("Last");
 
         cmb_Algorithm.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2" }));
 
@@ -144,6 +183,23 @@ public class MainWindow extends javax.swing.JFrame {
                 btn_RefreshActionPerformed(evt);
             }
         });
+
+        cmb_MatchNumber.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "3", "5", "10", "20", "30", "40", "50" }));
+        cmb_MatchNumber.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmb_MatchNumberActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("matches");
+
+        jLabel5.setText("Accuracy");
+
+        bar_Accuracy.setToolTipText("");
+
+        jLabel6.setText("Combination with best accuracy:");
+
+        lbl_Best.setText("jLabel7");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -162,15 +218,29 @@ public class MainWindow extends javax.swing.JFrame {
                             .addComponent(lbl_Dataset))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(btn_Refresh)))
-                        .addContainerGap(801, Short.MAX_VALUE))
+                                .addComponent(btn_Refresh)
+                                .addGap(61, 61, 61)
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(bar_Accuracy, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lbl_Best)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(172, 172, 172)
                         .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmb_MatchNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 452, Short.MAX_VALUE)
                         .addComponent(lbl_Next)
                         .addGap(275, 275, 275))))
         );
@@ -178,20 +248,30 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(lbl_Algorithm)
-                    .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_Refresh))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(lbl_Dataset)
-                    .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel2)
+                                .addComponent(lbl_Algorithm)
+                                .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btn_Refresh)
+                                .addComponent(jLabel5))
+                            .addComponent(bar_Accuracy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(lbl_Dataset)
+                            .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel6)
+                        .addComponent(lbl_Best)))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbl_Next)
-                    .addComponent(jLabel4))
+                    .addComponent(jLabel4)
+                    .addComponent(cmb_MatchNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -201,14 +281,14 @@ public class MainWindow extends javax.swing.JFrame {
 
         table_Prev.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null}
+                {null, null, null, null, null}
             },
             new String [] {
-                "Date", "Match", "Predicted outcome", "Outcome"
+                "Date", "Match", "Predicted outcome", "Outcome", "Correct"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -265,6 +345,11 @@ public class MainWindow extends javax.swing.JFrame {
         menu_Tools.setText("Tools");
 
         mitem_Options.setText("Options");
+        mitem_Options.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mitem_OptionsActionPerformed(evt);
+            }
+        });
         menu_Tools.add(mitem_Options);
 
         jMenuBar1.add(menu_Tools);
@@ -321,20 +406,32 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_cmb_DatasetActionPerformed
 
     private void btn_RefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_RefreshActionPerformed
+        fillTables();
+    }//GEN-LAST:event_btn_RefreshActionPerformed
+
+    public void setConnection(String host, int port, String user, String password) throws SQLException{
+        dc.setConnection(host, port, user, password);
+        System.out.println(host + ":" + port);
+    }
+    
+    private void fillTables(){
         try {     
             dc.openConnection();
             String data = cmb_Dataset.getSelectedItem().toString();
             String algorithm = cmb_Algorithm.getSelectedItem().toString();
+            matchNumber = Integer.parseInt(cmb_MatchNumber.getSelectedItem().toString());
             System.out.println(data);
             System.out.println(algorithm);
-            String prevCommand = "SELECT MATCHES.MATCH_DATE as \"Date\","
+            String prevCommand = "SELECT * FROM(SELECT MATCHES.MATCH_DATE as \"Date\","
                     + " HOME_TEAMS.\"NAME\" || ' - ' || AWAY_TEAMS.\"NAME\" as \"Match\","
                     + " PRED.PRED_RESULT as \"Predicted outcome\", MATCHES.\"RESULT\" as \"Outcome\""
                     + " FROM DIPLOMA.PREDICTIONS as PRED, DIPLOMA.MATCHES as MATCHES,"
                     + " DIPLOMA.TEAMS as HOME_TEAMS, DIPLOMA.TEAMS as AWAY_TEAMS"
                     + " WHERE PRED.\"DATA\" = '" + data + "' AND PRED.ALGORITHM = '" + algorithm
                     + "' AND MATCHES.MATCH_DATE < {fn TIMESTAMPADD(SQL_TSI_HOUR, -2, CURRENT_TIMESTAMP)} AND PRED.MATCH_ID = MATCHES.ID"
-                    + " AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID";
+                    + " AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID"
+                    + " ORDER BY MATCHES.MATCH_DATE DESC FETCH FIRST " + matchNumber + " ROWS ONLY) AS tmp"
+                    + " ORDER BY \"Date\" ASC";
             String nextCommand = "SELECT MATCHES.MATCH_DATE as \"Date\","
                     + " HOME_TEAMS.\"NAME\" || ' - ' || AWAY_TEAMS.\"NAME\" as \"Match\","
                     + " PRED.PRED_RESULT as \"Predicted outcome\" FROM DIPLOMA.PREDICTIONS as PRED,"
@@ -344,7 +441,7 @@ public class MainWindow extends javax.swing.JFrame {
                     + " AND PRED.MATCH_ID = MATCHES.ID AND MATCHES.HOME_TEAM_ID = HOME_TEAMS.ID"
                     + " AND MATCHES.AWAY_TEAM_ID = AWAY_TEAMS.ID";
             
-            System.out.println(nextCommand);
+            System.out.println(prevCommand);
             
             table_Prev.setModel(buildTableModel(prevCommand));
             resizeColumnWidth(table_Prev);
@@ -358,9 +455,11 @@ public class MainWindow extends javax.swing.JFrame {
             }
             table_Next.setModel(buildTableModel(nextCommand));
             resizeColumnWidth(table_Next);
-            
             lbl_Algorithm.setText(cmb_Algorithm.getSelectedItem().toString());
             lbl_Dataset.setText(cmb_Dataset.getSelectedItem().toString());
+            
+            bar_Accuracy.setValue(calcAccuracy(algorithm, data));
+            bar_Accuracy.setToolTipText(String.valueOf(bar_Accuracy.getValue()) + "%");
         } catch (SQLException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -370,9 +469,8 @@ public class MainWindow extends javax.swing.JFrame {
                 Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-    }//GEN-LAST:event_btn_RefreshActionPerformed
-
+    }
+    
     private void mitem_DataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mitem_DataActionPerformed
         HelpWindow help = new HelpWindow(this, true, 0);
         help.setVisible(true);
@@ -383,6 +481,15 @@ public class MainWindow extends javax.swing.JFrame {
         help.setVisible(true);
     }//GEN-LAST:event_mitem_AlgorithmActionPerformed
 
+    private void cmb_MatchNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmb_MatchNumberActionPerformed
+        fillTables();
+    }//GEN-LAST:event_cmb_MatchNumberActionPerformed
+
+    private void mitem_OptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mitem_OptionsActionPerformed
+        OptionsWindow options = new OptionsWindow(this, true, host, port, user, password);
+        options.setVisible(true);
+    }//GEN-LAST:event_mitem_OptionsActionPerformed
+
     private DefaultTableModel buildTableModel(String sql) throws SQLException{
         ResultSet rs = dc.executeCommand(sql);
         
@@ -390,14 +497,23 @@ public class MainWindow extends javax.swing.JFrame {
         
         Vector<String> columnNames = new Vector<>();
         int columnCount = meta.getColumnCount();
-        for (int i = 1; i <= columnCount; i++) {
+        if (columnCount == 4) {
+            columnCount++;
+        }
+        for (int i = 1; i <= columnCount-1; i++) {
             columnNames.add(meta.getColumnName(i));
         }
-        
+        columnNames.add("Correct");
+        System.out.println(columnNames);
         Vector<Vector<Object>> data = new Vector<>();
         while (rs.next()) {            
             Vector<Object> vector = new Vector<>();
             if (columnNames.contains("Outcome")) {
+                Timestamp matchDate = rs.getTimestamp("Date");
+                Date tableDate = new Date(matchDate.getTime());
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String stringDate = sdf.format(tableDate);
+                vector.add(stringDate);
                 int predictedOutcome = rs.getInt("Predicted outcome");
                 String predictedOut;
                 switch (predictedOutcome) {
@@ -424,13 +540,26 @@ public class MainWindow extends javax.swing.JFrame {
                 else {
                     out = "D";
                 }
-                for (int i = 1; i < columnCount-1; i++) {
+                for (int i = 2; i < columnCount-2; i++) {
                     vector.add(rs.getObject(i));
                 }
                 vector.add(predictedOut);
                 vector.add(out);
+                if (predictedOut.equals(out)) {
+                    vector.add("✓");
+                }
+                else{
+                    vector.add("x");
+                }
+                System.out.println(vector);
             }
             else {
+                Timestamp matchDate = rs.getTimestamp("Date");
+                Date tableDate = new Date(matchDate.getTime());
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                
+                String stringDate = sdf.format(tableDate);
+                vector.add(stringDate);
                 int predictedOutcome = rs.getInt("Predicted outcome");
                 String predictedOut;
                 switch (predictedOutcome) {
@@ -444,7 +573,7 @@ public class MainWindow extends javax.swing.JFrame {
                         predictedOut = "D";
                         break;
                 }
-                for (int i = 1; i < columnCount; i++) {
+                for (int i = 2; i < columnCount; i++) {
                     vector.add(rs.getObject(i));
                 }
                 vector.add(predictedOut);
@@ -466,6 +595,44 @@ public class MainWindow extends javax.swing.JFrame {
             }
             columnModel.getColumn(column).setPreferredWidth(width);
         }
+    }
+    
+    private int calcAccuracy(String algorithm, String data) throws SQLException{
+        String sql = "SELECT Matches.RESULT, Predictions.PRED_RESULT,"
+                + " Predictions.ALGORITHM, Predictions.\"DATA\""
+                + " FROM DIPLOMA.MATCHES AS Matches, DIPLOMA.PREDICTIONS AS Predictions"
+                + " WHERE Matches.RESULT <> 'N/A' AND Predictions.ALGORITHM = '" + algorithm + "'"
+                + " AND Predictions.\"DATA\" = '" + data + "' AND Predictions.MATCH_ID = Matches.ID";
+        String sizeSql = "SELECT COUNT(*) FROM (" + sql + ") AS tmp";
+        ResultSet rs = dc.executeCommand(sql);
+        ResultSet sizeRS = dc.executeCommand(sizeSql);
+        sizeRS.first();
+        int size = sizeRS.getInt(1);
+        int correct = 0;
+        while (rs.next()) {            
+            int pred = rs.getInt("PRED_RESULT");
+            String outcome = rs.getString("RESULT");
+            int out;
+            int homeGoals = outcome.charAt(0);
+            int awayGoals = outcome.charAt(2);
+            if (homeGoals > awayGoals) {
+                out = 1;
+            }
+            else if (awayGoals > homeGoals) {
+                out = -1;
+            }
+            else {
+                out = 0;
+            }
+            if (pred == out) {
+                correct++;
+            }
+        }
+        double acc = (double)correct/(double)size;
+        acc = acc*100;
+        int accuracy = (int)acc;
+        
+        return accuracy;
     }
     
     /**
@@ -504,13 +671,18 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JProgressBar bar_Accuracy;
     private javax.swing.JButton btn_Exit;
     private javax.swing.JButton btn_Refresh;
     private javax.swing.JComboBox<String> cmb_Algorithm;
     private javax.swing.JComboBox<String> cmb_Dataset;
+    private javax.swing.JComboBox<String> cmb_MatchNumber;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -518,6 +690,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lbl_Algorithm;
+    private javax.swing.JLabel lbl_Best;
     private javax.swing.JLabel lbl_Dataset;
     private javax.swing.JLabel lbl_Next;
     private javax.swing.JMenu menu_File;

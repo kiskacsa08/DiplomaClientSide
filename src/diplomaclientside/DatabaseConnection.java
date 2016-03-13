@@ -5,8 +5,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -15,12 +13,18 @@ import java.util.logging.Logger;
 
 //konstruktorban adatbázis kapcsolódáshoz szükséges adatok beállítása
 public class DatabaseConnection {
-    private final String host = "jdbc:derby://109.110.143.103/DiplomaOddsDatabase";
-    private final String user = "diploma";
-    private final String pass = "diploma";
+    private String host = "jdbc:derby://109.110.143.103:1527/DiplomaOddsDatabase";
+    private String user = "diploma";
+    private String pass = "diploma";
     private Connection con;
     private Statement stmt;
     private ResultSet rs;
+    
+    public DatabaseConnection(String host, int port, String user, String password){
+        this.host = "jdbc:derby://" + host +":" + port + "/DiplomaOddsDatabase";
+        this.user = user;
+        this.pass = password;
+    }
     
     //paraméterként megadott táblához kapcsolódás (a táblát adja vissza ResultSet-ként)
     public ResultSet openConnection(String table) throws SQLException{
@@ -29,6 +33,15 @@ public class DatabaseConnection {
         String SQL = "SELECT * FROM " + table;
         rs = stmt.executeQuery(SQL);
         return rs;
+    }
+    
+    public void setConnection(String host, int port, String user, String password) throws SQLException{
+        this.host = "jdbc:derby://" + host +":" + port + "/DiplomaOddsDatabase";
+        this.user = user;
+        this.pass = password;
+        this.closeConnection();
+        this.openConnection();
+        
     }
     
     //kapcsolat megnyitása

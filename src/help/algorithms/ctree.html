@@ -1,0 +1,45 @@
+<html>
+	<h1>Conditional Inference Trees</h1>
+	<h2>Description</h2>
+	<p>Recursive partitioning for continuous, censored, ordered, nominal and multivariate response variables
+	in a conditional inference framework.</p>
+	<h2>Details</h2>
+	<p>Conditional inference trees estimate a regression relationship by binary recursive partitioning in a
+	conditional inference framework. Roughly, the algorithm works as follows: 1) Test the global null
+	hypothesis of independence between any of the input variables and the response (which may be
+	multivariate as well). Stop if this hypothesis cannot be rejected. Otherwise select the input variable
+	with strongest association to the resonse. This association is measured by a p-value corresponding
+	to a test for the partial null hypothesis of a single input variable and the response. 2) Implement a
+	binary split in the selected input variable. 3) Recursively repeate steps 1) and 2).</p>
+	<p>The implementation utilizes a unified framework for conditional inference, or permutation tests,
+	developed by Strasser and Weber (1999). The stop criterion in step 1) is either based on multiplicity
+	adjusted p-values (testtype == "Bonferroni" or testtype == "MonteCarlo" in
+	Conditional Inference Trees 9
+	ctree_control), on the univariate p-values (testtype == "Univariate"), or on values of the test
+	statistic (testtype == "Teststatistic"). In both cases, the criterion is maximized, i.e., 1 - pvalue
+	is used. A split is implemented when the criterion exceeds the value given by mincriterion
+	as specified in ctree_control. For example, when mincriterion = 0.95, the p-value must be
+	smaller than $0.05$ in order to split this node. This statistical approach ensures that the right sized
+	tree is grown and no form of pruning or cross-validation or whatsoever is needed. The selection of
+	the input variable to split in is based on the univariate p-values avoiding a variable selection bias
+	towards input variables with many possible cutpoints.</p>
+	<p>Multiplicity-adjusted Monte-Carlo p-values are computed following a "min-p" approach. The univariate
+	p-values based on the limiting distribution (chi-square or normal) are computed for each of
+	the random permutations of the data. This means that one should use a quadratic test statistic when
+	factors are in play (because the evaluation of the corresponding multivariate normal distribution is
+	time-consuming).</p>
+	<p>By default, the scores for each ordinal factor x are 1:length(x), this may be changed using
+	scores = list(x = c(1,5,6)), for example.</p>
+	<p>Predictions can be computed using predict or treeresponse. The first function accepts arguments
+	type = c("response", "node", "prob") where type = "response" returns predicted
+	means, predicted classes or median predicted survival times, type = "node" returns terminal node
+	IDs (identical to where) and type = "prob" gives more information about the conditional distribution
+	of the response, i.e., class probabilities or predicted Kaplan-Meier curves and is identical to
+	treeresponse. For observations with zero weights, predictions are computed from the fitted tree
+	when newdata = NULL.</p>
+	<p>For a general description of the methodology see Hothorn, Hornik and Zeileis (2006) and Hothorn,
+	Hornik, van de Wiel and Zeileis (2006). Introductions for novices can be found in Strobl et al.
+	(2009) and at http://github.com/christophM/overview-ctrees.git.</p>
+	<h2>Source</h2>
+	<p>https://cran.r-project.org/web/packages/party/party.pdf</p>
+</html>

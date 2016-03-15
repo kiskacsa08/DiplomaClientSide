@@ -7,6 +7,7 @@ package diplomaclientside;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 import javax.print.DocFlavor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -52,8 +54,8 @@ public class MainWindow extends javax.swing.JFrame {
         cmb_Algorithm.setModel(new DefaultComboBoxModel(algorithms.toArray()));
         cmb_Dataset.setModel(new DefaultComboBoxModel(datas.toArray()));
         
-        lbl_Algorithm.setText(cmb_Algorithm.getItemAt(cmb_Algorithm.getSelectedIndex()));
-        lbl_Dataset.setText(cmb_Dataset.getItemAt(cmb_Dataset.getSelectedIndex()));
+//        lbl_Algorithm.setText(cmb_Algorithm.getItemAt(cmb_Algorithm.getSelectedIndex()));
+//        lbl_Dataset.setText(cmb_Dataset.getItemAt(cmb_Dataset.getSelectedIndex()));
         
         matchNumber = Integer.parseInt(cmb_MatchNumber.getSelectedItem().toString());
         host = "109.110.143.103";
@@ -63,25 +65,14 @@ public class MainWindow extends javax.swing.JFrame {
         dc = new DatabaseConnection(host, port, user, password);
         
         fillTables();
-        try {
-            int best = 0;
-            String bestAlgorithm = "";
-            String bestData = "";
-            for (String algorithm : algorithms) {
-                for (String data : datas) {
-                    int act = calcAccuracy(algorithm, data);
-                    if (act > best) {
-                        best = act;
-                        bestAlgorithm = algorithm;
-                        bestData = data;
-                    }
-                }
-            }
-            String labelString = bestAlgorithm + ", " + bestData + " with " + best + "% accuracy";
-            lbl_Best.setText(labelString);
-        } catch (SQLException ex) {
-            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
+        lbl_Algorithm.setForeground(Color.BLUE.darker());
+        lbl_Algorithm.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lbl_Algorithm.setToolTipText("Click for help");
+        
+        lbl_Dataset.setForeground(Color.BLUE.darker());
+        lbl_Dataset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lbl_Dataset.setToolTipText("Click for help");
     }
 
     /**
@@ -109,8 +100,8 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         bar_Accuracy = new javax.swing.JProgressBar();
+        lbl_Acc = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        lbl_Best = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         table_Prev = new javax.swing.JTable();
@@ -120,6 +111,7 @@ public class MainWindow extends javax.swing.JFrame {
         menu_File = new javax.swing.JMenu();
         mitem_Exit = new javax.swing.JMenuItem();
         menu_Tools = new javax.swing.JMenu();
+        mitem_Stat = new javax.swing.JMenuItem();
         mitem_Options = new javax.swing.JMenuItem();
         menu_Help = new javax.swing.JMenu();
         mitem_Data = new javax.swing.JMenuItem();
@@ -157,10 +149,20 @@ public class MainWindow extends javax.swing.JFrame {
         getContentPane().add(jPanel3, java.awt.BorderLayout.SOUTH);
 
         lbl_Algorithm.setText("algorithm_comes_here");
+        lbl_Algorithm.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lbl_AlgorithmMouseClicked(evt);
+            }
+        });
 
         jLabel3.setText("Dataset:");
 
         lbl_Dataset.setText("dataset_comes_here");
+        lbl_Dataset.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lbl_DatasetMouseClicked(evt);
+            }
+        });
 
         jLabel2.setText("Algorithm:");
 
@@ -184,7 +186,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        cmb_MatchNumber.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "3", "5", "10", "20", "30", "40", "50" }));
+        cmb_MatchNumber.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "10", "20", "30", "40", "50" }));
         cmb_MatchNumber.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmb_MatchNumberActionPerformed(evt);
@@ -197,9 +199,10 @@ public class MainWindow extends javax.swing.JFrame {
 
         bar_Accuracy.setToolTipText("");
 
-        jLabel6.setText("Combination with best accuracy:");
+        lbl_Acc.setText("jLabel6");
 
-        lbl_Best.setText("jLabel7");
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/football_theme_picture_08_hd_pictures_168215.jpg"))); // NOI18N
+        jLabel6.setText("jLabel6");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -207,7 +210,17 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(172, 172, 172)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmb_MatchNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 452, Short.MAX_VALUE)
+                        .addComponent(lbl_Next)
+                        .addGap(75, 75, 75))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -221,28 +234,17 @@ public class MainWindow extends javax.swing.JFrame {
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(btn_Refresh)
-                                .addGap(61, 61, 61)
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(bar_Accuracy, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel6)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lbl_Best)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(172, 172, 172)
-                        .addComponent(jLabel4)
+                                .addComponent(btn_Refresh))
+                            .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(61, 61, 61)
+                        .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cmb_MatchNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(bar_Accuracy, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 452, Short.MAX_VALUE)
-                        .addComponent(lbl_Next)
-                        .addGap(275, 275, 275))))
+                        .addComponent(lbl_Acc)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(29, 29, 29))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -257,22 +259,22 @@ public class MainWindow extends javax.swing.JFrame {
                                 .addComponent(cmb_Algorithm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(btn_Refresh)
                                 .addComponent(jLabel5))
-                            .addComponent(bar_Accuracy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(bar_Accuracy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lbl_Acc))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
                             .addComponent(lbl_Dataset)
-                            .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel6)
-                        .addComponent(lbl_Best)))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbl_Next)
-                    .addComponent(jLabel4)
-                    .addComponent(cmb_MatchNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(cmb_Dataset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(29, 29, 29)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lbl_Next)
+                            .addComponent(jLabel4)
+                            .addComponent(cmb_MatchNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.NORTH);
@@ -344,6 +346,14 @@ public class MainWindow extends javax.swing.JFrame {
 
         menu_Tools.setText("Tools");
 
+        mitem_Stat.setText("Statistics");
+        mitem_Stat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mitem_StatActionPerformed(evt);
+            }
+        });
+        menu_Tools.add(mitem_Stat);
+
         mitem_Options.setText("Options");
         mitem_Options.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -373,6 +383,11 @@ public class MainWindow extends javax.swing.JFrame {
         menu_Help.add(mitem_Algorithm);
 
         mitem_About.setText("About");
+        mitem_About.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mitem_AboutActionPerformed(evt);
+            }
+        });
         menu_Help.add(mitem_About);
 
         jMenuBar1.add(menu_Help);
@@ -453,13 +468,14 @@ public class MainWindow extends javax.swing.JFrame {
             else {
                 lbl_Next.setText("Matches in next 7 days");
             }
-            table_Next.setModel(buildTableModel(nextCommand));
+            table_Next.setModel(nextModel);
             resizeColumnWidth(table_Next);
-            lbl_Algorithm.setText(cmb_Algorithm.getSelectedItem().toString());
-            lbl_Dataset.setText(cmb_Dataset.getSelectedItem().toString());
+            lbl_Algorithm.setText("<html><u>" + cmb_Algorithm.getSelectedItem().toString() + "</u></html>");
+            lbl_Dataset.setText("<html><u>" + cmb_Dataset.getSelectedItem().toString() + "</u></html>");
             
             bar_Accuracy.setValue(calcAccuracy(algorithm, data));
             bar_Accuracy.setToolTipText(String.valueOf(bar_Accuracy.getValue()) + "%");
+            lbl_Acc.setText(String.valueOf(bar_Accuracy.getValue()) + "%");
         } catch (SQLException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -490,20 +506,44 @@ public class MainWindow extends javax.swing.JFrame {
         options.setVisible(true);
     }//GEN-LAST:event_mitem_OptionsActionPerformed
 
+    private void mitem_StatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mitem_StatActionPerformed
+        StatisticsWindow statistics = new StatisticsWindow(this, true, dc, algorithms, datas);
+        statistics.setVisible(true);
+    }//GEN-LAST:event_mitem_StatActionPerformed
+
+    private void lbl_AlgorithmMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbl_AlgorithmMouseClicked
+        HelpWindow help = new HelpWindow(this, true, 1, lbl_Algorithm.getText().replaceAll("\\<.*?>",""));
+        help.setVisible(true);
+    }//GEN-LAST:event_lbl_AlgorithmMouseClicked
+
+    private void lbl_DatasetMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbl_DatasetMouseClicked
+        HelpWindow help = new HelpWindow(this, true, 0, lbl_Dataset.getText().replaceAll("\\<.*?>",""));
+        help.setVisible(true);
+    }//GEN-LAST:event_lbl_DatasetMouseClicked
+
+    private void mitem_AboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mitem_AboutActionPerformed
+        AboutWindow about = new AboutWindow(this, true);
+        about.setVisible(true);
+    }//GEN-LAST:event_mitem_AboutActionPerformed
+
     private DefaultTableModel buildTableModel(String sql) throws SQLException{
         ResultSet rs = dc.executeCommand(sql);
         
         ResultSetMetaData meta = rs.getMetaData();
-        
         Vector<String> columnNames = new Vector<>();
         int columnCount = meta.getColumnCount();
+        System.out.println("colCount: " + columnCount);
         if (columnCount == 4) {
             columnCount++;
+            for (int i = 1; i <= columnCount-1; i++) {
+                columnNames.add(meta.getColumnName(i));
+            }
+            columnNames.add("Correct");
+        } else {
+            for (int i = 1; i <= columnCount; i++) {
+                columnNames.add(meta.getColumnName(i));
+            }
         }
-        for (int i = 1; i <= columnCount-1; i++) {
-            columnNames.add(meta.getColumnName(i));
-        }
-        columnNames.add("Correct");
         System.out.println(columnNames);
         Vector<Vector<Object>> data = new Vector<>();
         while (rs.next()) {            
@@ -573,9 +613,7 @@ public class MainWindow extends javax.swing.JFrame {
                         predictedOut = "D";
                         break;
                 }
-                for (int i = 2; i < columnCount; i++) {
-                    vector.add(rs.getObject(i));
-                }
+                vector.add(rs.getString("Match"));
                 vector.add(predictedOut);
             }
             data.add(vector);
@@ -689,8 +727,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lbl_Acc;
     private javax.swing.JLabel lbl_Algorithm;
-    private javax.swing.JLabel lbl_Best;
     private javax.swing.JLabel lbl_Dataset;
     private javax.swing.JLabel lbl_Next;
     private javax.swing.JMenu menu_File;
@@ -701,6 +739,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem mitem_Data;
     private javax.swing.JMenuItem mitem_Exit;
     private javax.swing.JMenuItem mitem_Options;
+    private javax.swing.JMenuItem mitem_Stat;
     private javax.swing.JTable table_Next;
     private javax.swing.JTable table_Prev;
     // End of variables declaration//GEN-END:variables

@@ -62,6 +62,8 @@ public class OptionsWindow extends javax.swing.JDialog {
         lbl_Connection = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Options");
+        setResizable(false);
 
         jLabel1.setText("Database host");
 

@@ -1,0 +1,20 @@
+<html>
+	<h1>Support Vector Machines</h1>
+	<h2>Description</h2>
+	<p>svm is used to train a support vector machine. It can be used to carry out general regression and
+	classification (of nu and epsilon-type), as well as density-estimation. A formula interface is provided.</p>
+	<h2>Details</h2>
+	<p>For multiclass-classification with k levels, k>2, libsvm uses the ‘one-against-one’-approach, in
+	which k(k-1)/2 binary classifiers are trained; the appropriate class is found by a voting scheme.</p>
+	<p>libsvm internally uses a sparse data representation, which is also high-level supported by the package
+	SparseM.</p>
+	<p>If the predictor variables include factors, the formula interface must be used to get a correct model
+	matrix.</p>
+	<p>The probability model for classification fits a logistic distribution using maximum likelihood to
+	the decision values of all binary classifiers, and computes the a-posteriori class probabilities for
+	the multi-class problem using quadratic optimization. The probabilistic regression model assumes
+	(zero-mean) laplace-distributed errors for the predictions, and estimates the scale parameter using
+	maximum likelihood.</p>
+	<h2>Source</h2>
+	<p>https://cran.r-project.org/web/packages/e1071/e1071.pdf</p>
+</html>

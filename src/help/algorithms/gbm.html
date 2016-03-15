@@ -1,0 +1,22 @@
+<html>
+	<h1>Generalized Boosted Regression Modeling</h1>
+	<h2>Description</h2>
+	<p>Fits generalized boosted regression models</p>
+	<h2>Details</h2>
+	<p>This package implements the generalized boosted modeling framework. Boosting is the process
+	of iteratively adding basis functions in a greedy fashion so that each additional basis function further
+	reduces the selected loss function. This implementation closely follows Friedman’s Gradient
+	Boosting Machine (Friedman, 2001).</p>
+	<p>In addition to many of the features documented in the Gradient Boosting Machine, gbm offers additional
+	features including the out-of-bag estimator for the optimal number of iterations, the ability to
+	store and manipulate the resulting gbm object, and a variety of other loss functions that had not previously
+	had associated boosting algorithms, including the Cox partial likelihood for censored data,
+	the poisson likelihood for count outcomes, and a gradient boosting implementation to minimize the
+	AdaBoost exponential loss function.</p>
+	<p>gbm.fit provides the link between R and the C++ gbm engine. gbm is a front-end to gbm.fit
+	that uses the familiar R modeling formulas. However, model.frame is very slow if there are many
+	predictor variables. For power-users with many variables use gbm.fit. For general practice gbm is
+	preferable.</p>
+	<h2>Source</h2>
+	<p>https://cran.r-project.org/web/packages/gbm/gbm.pdf</p>
+</html>

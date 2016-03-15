@@ -5,8 +5,16 @@
  */
 package diplomaclientside;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 
 /**
@@ -37,8 +45,24 @@ public class HelpWindow extends javax.swing.JDialog {
         else {
             cmb_Page.setModel(new DefaultComboBoxModel(algorithms.toArray()));
         }
+        cmb_Page.setSelectedIndex(0);
     }
 
+    public HelpWindow(java.awt.Frame parent, boolean modal, int type, String page) {
+        super(parent, modal);
+        initComponents();
+        this.type = type;
+        algorithms = new ArrayList<>(Arrays.asList("ctree", "gbm", "naiveBayes", "randomForest", "rpart", "svm", "knn"));
+        datas = new ArrayList<>(Arrays.asList("all", "avg", "odds", "prev", "10bet", "32red", "bet365", "betfred", "betrally", "betvictor", "boylesports", "comeon", "coral", "ladbrokes", "marathonbet", "skybet", "smartlive", "sportingbet", "spreadex", "stanjames", "titanbet", "unibet", "williamhill", "youbet", "betdaq", "betfair"));
+        if (type == 0) {
+            cmb_Page.setModel(new DefaultComboBoxModel(datas.toArray()));
+        }
+        else {
+            cmb_Page.setModel(new DefaultComboBoxModel(algorithms.toArray()));
+        }
+        cmb_Page.setSelectedItem(page);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -50,9 +74,9 @@ public class HelpWindow extends javax.swing.JDialog {
 
         cmb_Page = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
         btn_Close = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txt_HelpPage = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -65,15 +89,14 @@ public class HelpWindow extends javax.swing.JDialog {
 
         jLabel1.setText("Select page");
 
-        jTextPane1.setEditable(false);
-        jScrollPane1.setViewportView(jTextPane1);
-
         btn_Close.setText("Close");
         btn_Close.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_CloseActionPerformed(evt);
             }
         });
+
+        jScrollPane2.setViewportView(txt_HelpPage);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -82,15 +105,15 @@ public class HelpWindow extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 665, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btn_Close, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cmb_Page, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 411, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btn_Close, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -101,8 +124,8 @@ public class HelpWindow extends javax.swing.JDialog {
                     .addComponent(cmb_Page, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(btn_Close)
                 .addContainerGap())
         );
@@ -115,14 +138,49 @@ public class HelpWindow extends javax.swing.JDialog {
     }//GEN-LAST:event_btn_CloseActionPerformed
 
     private void cmb_PageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmb_PageActionPerformed
-        System.out.println("oke");
+        this.setTitle(cmb_Page.getSelectedItem().toString() + " help");
+        try {
+            String res = "";
+            if (type == 0) {
+                res = "/help/datasets/" + cmb_Page.getSelectedItem().toString() + ".html";
+            }
+            else {
+                res = "/help/algorithms/" + cmb_Page.getSelectedItem().toString() + ".html";
+            }
+            File file = null;
+            String path;
+            URL resource = HelpWindow.class.getResource(res);
+
+            if (resource.toString().startsWith("jar:")) {
+                InputStream input = HelpWindow.class.getResourceAsStream(res);
+                file = File.createTempFile(cmb_Page.getSelectedItem().toString(), ".html");
+                OutputStream out = new FileOutputStream(file);
+                int read;
+                byte[] bytes = new byte[1024];
+                while ((read = input.read(bytes)) != -1) {
+                    out.write(bytes, 0, read);
+                }
+                file.deleteOnExit();
+                path = file.getAbsolutePath();
+                input = null;
+                out = null;
+            }
+            else {
+                path = resource.getPath();
+            }
+            file = new File(path);
+            txt_HelpPage.setPage(file.toURI().toURL());
+            txt_HelpPage.setEditable(false);
+        } catch (IOException ex) {
+            Logger.getLogger(HelpWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_cmb_PageActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_Close;
     private javax.swing.JComboBox<String> cmb_Page;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JEditorPane txt_HelpPage;
     // End of variables declaration//GEN-END:variables
 }

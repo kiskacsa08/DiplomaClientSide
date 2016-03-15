@@ -13,7 +13,7 @@ import java.sql.Statement;
 
 //konstruktorban adatbázis kapcsolódáshoz szükséges adatok beállítása
 public class DatabaseConnection {
-    private String host = "jdbc:derby://109.110.143.103:1527/DiplomaOddsDatabase";
+    private String host = "jdbc:derby://109.110.143.103:1527//home/server/.netbeans-derby/DiplomaOddsDatabase";
     private String user = "diploma";
     private String pass = "diploma";
     private Connection con;
@@ -21,7 +21,7 @@ public class DatabaseConnection {
     private ResultSet rs;
     
     public DatabaseConnection(String host, int port, String user, String password){
-        this.host = "jdbc:derby://" + host +":" + port + "/DiplomaOddsDatabase";
+        this.host = "jdbc:derby://" + host +":" + port + "//home/server/.netbeans-derby/DiplomaOddsDatabase";
         this.user = user;
         this.pass = password;
     }
@@ -36,12 +36,11 @@ public class DatabaseConnection {
     }
     
     public void setConnection(String host, int port, String user, String password) throws SQLException{
-        this.host = "jdbc:derby://" + host +":" + port + "/DiplomaOddsDatabase";
+        this.host = "jdbc:derby://" + host +":" + port + "//home/server/.netbeans-derby/DiplomaOddsDatabase";
         this.user = user;
         this.pass = password;
         this.closeConnection();
         this.openConnection();
-        
     }
     
     //kapcsolat megnyitása

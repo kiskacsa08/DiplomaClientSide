@@ -298,7 +298,6 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         table_Prev.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        table_Prev.setEnabled(false);
         jScrollPane2.setViewportView(table_Prev);
 
         jPanel1.add(jScrollPane2);
@@ -618,7 +617,13 @@ public class MainWindow extends javax.swing.JFrame {
             }
             data.add(vector);
         }
-        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        DefaultTableModel model = new DefaultTableModel(data, columnNames){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+               //all cells false
+               return false;
+            }
+        };
         return model;
     }
     

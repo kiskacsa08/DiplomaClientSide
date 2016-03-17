@@ -13,7 +13,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,45 +40,28 @@ public class StatisticsWindow extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.dc = dc;
-        try {
-            int best = 0;
-            int worst = 100;
-            String bestAlgorithm = "";
-            String bestData = "";
-            String worstAlgorithm = "";
-            String worstData = "";
-            for (String algorithm : algorithms) {
-                for (String data : datas) {
-                    int act = calcAccuracy(algorithm, data);
-                    if (act > best) {
-                        best = act;
-                        bestAlgorithm = algorithm;
-                        bestData = data;
-                    }
-                    if (act < worst) {
-                        worst = act;
-                        worstAlgorithm = algorithm;
-                        worstData = data;
-                    }
-                }
-            }
-            Vector<Object> bestRow = new Vector<>();
-            Vector<Object> worstRow = new Vector<>();
-            bestRow.add("Best");
-            bestRow.add(bestAlgorithm);
-            bestRow.add(bestData);
-            bestRow.add(String.valueOf(best) + "%");
-            worstRow.add("Worst");
-            worstRow.add(worstAlgorithm);
-            worstRow.add(worstData);
-            worstRow.add(String.valueOf(worst) + "%");
-            table_Stat.setModel(buildTableModel(bestRow, worstRow));
+        try {            
+            String sql = "SELECT Matches.ID, Matches.RESULT, Predictions.PRED_RESULT,"
+                + " Predictions.ALGORITHM, Predictions.\"DATA\""
+                + " FROM DIPLOMA.MATCHES AS Matches, DIPLOMA.PREDICTIONS AS Predictions"
+                + " WHERE Matches.RESULT <> 'N/A' AND Predictions.MATCH_ID = Matches.ID"
+                + " ORDER BY Predictions.ALGORITHM, Predictions.\"DATA\", Matches.ID";
+            String algorithmsNumSql = "SELECT COUNT (*) FROM (SELECT DISTINCT ALGORITHM FROM (" + sql + ") AS tmp) AS tmp2";
+            String datasNumSql = "SELECT COUNT (*) FROM (SELECT DISTINCT \"DATA\" FROM (" + sql + ") AS tmp) AS tmp2";
+            String matchesNumSql = "SELECT COUNT (*) FROM (SELECT DISTINCT ID FROM (" + sql + ") AS tmp) AS tmp2";
+            ResultSet rs = dc.executeCommand(sql);
+            ResultSet algorithmsNumRS = dc.executeCommand(algorithmsNumSql);
+            ResultSet datasNumRS = dc.executeCommand(datasNumSql);
+            ResultSet matchesNumRS = dc.executeCommand(matchesNumSql);
+            algorithmsNumRS.first();
+            int algorithmsNum = algorithmsNumRS.getInt(1);
+            datasNumRS.first();
+            int datasNum = datasNumRS.getInt(1);
+            matchesNumRS.first();
+            int matchesNum = matchesNumRS.getInt(1);
+            Vector<Vector<Object>> bestAndWorst = calcAccuracy(rs, algorithmsNum, datasNum, matchesNum);
+            table_Stat.setModel(buildTableModel(bestAndWorst.get(0), bestAndWorst.get(1)));
             resizeColumnWidth(table_Stat);
-//            table_Stat.setPreferredScrollableViewportSize(table_Stat.getPreferredSize());
-//            table_Stat.setFillsViewportHeight(true);
-//            jScrollPane2.setSize(table_Stat.getPreferredSize());
-//            Dimension d = table_Stat.getPreferredSize();
-//            jScrollPane2.setPreferredSize(new Dimension(d.width, table_Stat.getRowHeight()*table_Stat.getRowCount()+1));
         } catch (SQLException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -90,46 +76,84 @@ public class StatisticsWindow extends javax.swing.JDialog {
         columnNames.add("Accuracy");
         data.add(best);
         data.add(worst);
-        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        //DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        DefaultTableModel model = new DefaultTableModel(data, columnNames){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+               //all cells false
+               return false;
+            }
+        };
         return model;
     }
     
-    private int calcAccuracy(String algorithm, String data) throws SQLException{
-        String sql = "SELECT Matches.RESULT, Predictions.PRED_RESULT,"
-                + " Predictions.ALGORITHM, Predictions.\"DATA\""
-                + " FROM DIPLOMA.MATCHES AS Matches, DIPLOMA.PREDICTIONS AS Predictions"
-                + " WHERE Matches.RESULT <> 'N/A' AND Predictions.ALGORITHM = '" + algorithm + "'"
-                + " AND Predictions.\"DATA\" = '" + data + "' AND Predictions.MATCH_ID = Matches.ID";
-        String sizeSql = "SELECT COUNT(*) FROM (" + sql + ") AS tmp";
-        ResultSet rs = dc.executeCommand(sql);
-        ResultSet sizeRS = dc.executeCommand(sizeSql);
-        sizeRS.first();
-        int size = sizeRS.getInt(1);
-        int correct = 0;
-        while (rs.next()) {            
-            int pred = rs.getInt("PRED_RESULT");
-            String outcome = rs.getString("RESULT");
-            int out;
-            int homeGoals = outcome.charAt(0);
-            int awayGoals = outcome.charAt(2);
-            if (homeGoals > awayGoals) {
-                out = 1;
-            }
-            else if (awayGoals > homeGoals) {
-                out = -1;
-            }
-            else {
-                out = 0;
-            }
-            if (pred == out) {
-                correct++;
+    private Vector<Vector<Object>> calcAccuracy(ResultSet rs, int algorithmsNum, int datasNum, int matchesNum) throws SQLException{
+        HashMap<String, ArrayList<HashMap<String, Boolean>>> allAccuracies = new HashMap<>();
+        ArrayList<HashMap<String, Boolean>> matches = new ArrayList<>();
+        Vector<Vector<Object>> bestAndWorst = new Vector<>();
+        ArrayList<ArrayList<Object>> accuracies = new ArrayList<>();
+        rs.first();
+        for (int i = 0; i < algorithmsNum; i++) {
+            for (int j = 0; j < datasNum; j++) {
+                ArrayList<Object> act = new ArrayList<>();
+                act.add(rs.getString("ALGORITHM"));
+                act.add(rs.getString("DATA"));
+                int correct = 0;
+                for (int k = 0; k < matchesNum; k++) {
+                    int pred = rs.getInt("PRED_RESULT");
+                    String outcome = rs.getString("RESULT");
+                    int out;
+                    int homeGoals = outcome.charAt(0);
+                    int awayGoals = outcome.charAt(2);
+                    if (homeGoals > awayGoals) {
+                        out = 1;
+                    }
+                    else if (awayGoals > homeGoals) {
+                        out = -1;
+                    }
+                    else {
+                        out = 0;
+                    }
+                    if (pred == out) {
+                        correct++;
+                    }
+                    rs.next();
+                    if (rs.next() == false) {
+                        rs.last();
+                    }
+                    else {
+                        rs.previous();
+                    }
+                }
+                int acc = (int)Math.round((double)correct/(double)matchesNum * 100);
+                act.add(acc);
+                accuracies.add(act);
             }
         }
-        double acc = (double)correct/(double)size;
-        acc = acc*100;
-        int accuracy = (int)acc;
-        
-        return accuracy;
+        accuracies.remove(accuracies.size()-1);
+        Vector<Object> best = new Vector<>();
+        Vector<Object> worst = new Vector<>();
+        int max = 0;
+        int min = 100;
+        for (ArrayList<Object> accuracy : accuracies) {
+            if ((int)accuracy.get(2) > max) {
+                best.clear();
+                best.setSize(accuracy.size());
+                Collections.copy(best, accuracy);
+                max = (int)accuracy.get(2);
+            }
+            if ((int)accuracy.get(2) < min) {
+                worst.clear();
+                worst.setSize(accuracy.size());
+                Collections.copy(worst, accuracy);
+                min = (int)accuracy.get(2);
+            }
+        }
+        best.add(0, "Best");
+        worst.add(0, "Worst");
+        bestAndWorst.add(best);
+        bestAndWorst.add(worst);
+        return bestAndWorst;
     }
     
     private void resizeColumnWidth(JTable table) {

@@ -39,8 +39,9 @@ public class DatabaseConnection {
         this.host = "jdbc:derby://" + host +":" + port + "//home/server/.netbeans-derby/DiplomaOddsDatabase";
         this.user = user;
         this.pass = password;
-        this.closeConnection();
-        this.openConnection();
+        System.out.println(host);
+        con = DriverManager.getConnection(this.host, this.user, this.pass);
+        stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
     }
     
     //kapcsolat megnyitása
@@ -56,8 +57,13 @@ public class DatabaseConnection {
         return rs;
     }
     
+    public boolean testConnection() throws SQLException{
+        boolean opened = con.isClosed();
+        return !opened;
+    }
+    
     //kapcsolat bezárása
-    public void closeConnection() throws SQLException {
+    public void closeConnection() throws SQLException, NullPointerException {
         con.close();
         stmt.close();
         if (rs != null) {

@@ -8,6 +8,7 @@ package diplomaclientside;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -188,8 +189,9 @@ public class OptionsWindow extends javax.swing.JDialog {
         try {
             parent.setConnection(txt_Host.getText(), (int) spin_Port.getValue(), txt_User.getText(), txt_Password.getText());
             this.dispose();
-        } catch (SQLException ex) {
+        } catch (SQLException | NullPointerException ex) {
             Logger.getLogger(OptionsWindow.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "An error occured.\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btn_OKActionPerformed
 
@@ -202,9 +204,10 @@ public class OptionsWindow extends javax.swing.JDialog {
             parent.setConnection(txt_Host.getText(), (int) spin_Port.getValue(), txt_User.getText(), txt_Password.getText());
             lbl_Connection.setText("Success");
             btn_OK.setEnabled(true);
-        } catch (SQLException ex) {
+        } catch (SQLException | NullPointerException ex) {
             lbl_Connection.setText("Failed");
             btn_OK.setEnabled(false);
+            Logger.getLogger(OptionsWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_TestActionPerformed
 

@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.print.DocFlavor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
@@ -64,6 +65,14 @@ public class MainWindow extends javax.swing.JFrame {
         password = "diploma";
         dc = new DatabaseConnection(host, port, user, password);
         
+        lblHere.setForeground(Color.BLUE.darker());
+        lblHere.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblHere.setText("<html><u>" + "here" + "</u></html>");
+        
+        lblConnection.setVisible(false);
+        lblHere.setVisible(false);
+        lblConnection2.setVisible(false);
+        
         fillTables();
         
         lbl_Algorithm.setForeground(Color.BLUE.darker());
@@ -86,6 +95,9 @@ public class MainWindow extends javax.swing.JFrame {
 
         jPanel3 = new javax.swing.JPanel();
         btn_Exit = new javax.swing.JButton();
+        lblConnection = new javax.swing.JLabel();
+        lblHere = new javax.swing.JLabel();
+        lblConnection2 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         lbl_Algorithm = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -129,12 +141,29 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        lblConnection.setText("There is no connection. Click");
+
+        lblHere.setText("here");
+        lblHere.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblHereMouseClicked(evt);
+            }
+        });
+
+        lblConnection2.setText("to try again.");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap(1144, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(lblConnection)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHere)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblConnection2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 808, Short.MAX_VALUE)
                 .addComponent(btn_Exit, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -142,13 +171,16 @@ public class MainWindow extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btn_Exit)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_Exit)
+                    .addComponent(lblConnection)
+                    .addComponent(lblHere)
+                    .addComponent(lblConnection2))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getContentPane().add(jPanel3, java.awt.BorderLayout.SOUTH);
 
-        lbl_Algorithm.setText("algorithm_comes_here");
         lbl_Algorithm.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbl_AlgorithmMouseClicked(evt);
@@ -157,7 +189,6 @@ public class MainWindow extends javax.swing.JFrame {
 
         jLabel3.setText("Dataset:");
 
-        lbl_Dataset.setText("dataset_comes_here");
         lbl_Dataset.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbl_DatasetMouseClicked(evt);
@@ -198,8 +229,6 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel5.setText("Accuracy");
 
         bar_Accuracy.setToolTipText("");
-
-        lbl_Acc.setText("jLabel6");
 
         jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/football_theme_picture_08_hd_pictures_168215.jpg"))); // NOI18N
         jLabel6.setText("jLabel6");
@@ -425,6 +454,9 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void setConnection(String host, int port, String user, String password) throws SQLException{
         dc.setConnection(host, port, user, password);
+        lblConnection.setVisible(false);
+        lblHere.setVisible(false);
+        lblConnection2.setVisible(false);
         System.out.println(host + ":" + port);
     }
     
@@ -477,10 +509,14 @@ public class MainWindow extends javax.swing.JFrame {
             lbl_Acc.setText(String.valueOf(bar_Accuracy.getValue()) + "%");
         } catch (SQLException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "An error occured.\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            lblConnection.setVisible(true);
+            lblHere.setVisible(true);
+            lblConnection2.setVisible(true);
         } finally {
             try {
                 dc.closeConnection();
-            } catch (SQLException ex) {
+            } catch (SQLException | NullPointerException ex) {
                 Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -524,6 +560,10 @@ public class MainWindow extends javax.swing.JFrame {
         AboutWindow about = new AboutWindow(this, true);
         about.setVisible(true);
     }//GEN-LAST:event_mitem_AboutActionPerformed
+
+    private void lblHereMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblHereMouseClicked
+        fillTables();
+    }//GEN-LAST:event_lblHereMouseClicked
 
     private DefaultTableModel buildTableModel(String sql) throws SQLException{
         ResultSet rs = dc.executeCommand(sql);
@@ -732,6 +772,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblConnection;
+    private javax.swing.JLabel lblConnection2;
+    private javax.swing.JLabel lblHere;
     private javax.swing.JLabel lbl_Acc;
     private javax.swing.JLabel lbl_Algorithm;
     private javax.swing.JLabel lbl_Dataset;
